@@ -7,13 +7,12 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/xianyouq/mydocker/images"
 )
 
 //Create a AUFS filesystem as container root workspace
-func NewWorkSpace(volume, imageName, containerName string) {
+func NewWorkSpace(volume, ImageLocation, containerName string) {
 	CreateWriteLayer(containerName)
-	CreateMountPoint(containerName, imageName)
+	CreateMountPoint(containerName, ImageLocation)
 	if volume != "" {
 		volumeURLs := strings.Split(volume, ":")
 		length := len(volumeURLs)
@@ -53,16 +52,15 @@ func MountVolume(volumeURLs []string, containerName string) error {
 	return nil
 }
 
-func CreateMountPoint(containerName, imageName string) error {
+func CreateMountPoint(containerName, ImageLocation string) error {
 	mntUrl := fmt.Sprintf(MntUrl, containerName)
 	if err := os.MkdirAll(mntUrl, 0777); err != nil {
 		log.Errorf("Mkdir mountpoint dir %s error. %v", mntUrl, err)
 		return err
 	}
 	tmpWriteLayer := fmt.Sprintf(WriteLayerUrl, containerName)
-	tmpImageLocation := images.GetImagePathByTag(imageName)
 	mntURL := fmt.Sprintf(MntUrl, containerName)
-	dirs := "noxino,dirs=" + tmpWriteLayer + ":" + tmpImageLocation
+	dirs := "noxino,dirs=" + tmpWriteLayer + ":" + ImageLocation
 	_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mntURL).CombinedOutput()
 	if err != nil {
 		log.Errorf("Run command for creating mount point failed %v", err)

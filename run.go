@@ -12,6 +12,7 @@ import (
 	"github.com/xianyouq/mydocker/cgroups"
 	"github.com/xianyouq/mydocker/cgroups/subsystems"
 	"github.com/xianyouq/mydocker/container"
+	"github.com/xianyouq/mydocker/images"
 	"github.com/xianyouq/mydocker/network"
 	"github.com/xianyouq/mydocker/util"
 )
@@ -22,8 +23,12 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	if containerName == "" {
 		containerName = containerID
 	}
-
-	parent, writePipe := container.NewParentProcess(tty, containerName, volume, imageName, envSlice)
+	ImageLocation, err := images.GetImagePathByTag(imageName)
+	if err != nil {
+		log.Errorf("images not exist:%v", err)
+		return
+	}
+	parent, writePipe := container.NewParentProcess(tty, containerName, volume, ImageLocation, envSlice)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
