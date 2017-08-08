@@ -34,12 +34,13 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		return
 	}
 
-	if err := parent.Start(); err != nil {
+	if err = parent.Start(); err != nil {
 		log.Error(err)
 	}
 
 	//record container info
-	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume, imageName)
+	var containerName string
+	containerName, err = recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume, imageName)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
