@@ -1,14 +1,14 @@
 package main
 
-
 import (
-	log "github.com/Sirupsen/logrus"
 	"fmt"
-	"github.com/xianlubird/mydocker/container"
 	"os/exec"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/xianyouq/mydocker/container"
 )
 
-func commitContainer(containerName, imageName string){
+func commitContainer(containerName, imageName string) {
 	mntURL := fmt.Sprintf(container.MntUrl, containerName)
 	mntURL += "/"
 

@@ -6,9 +6,10 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
-	"github.com/xianlubird/mydocker/cgroups/subsystems"
-	"github.com/xianlubird/mydocker/container"
-	"github.com/xianlubird/mydocker/network"
+	"github.com/xianyouq/mydocker/cgroups/subsystems"
+	"github.com/xianyouq/mydocker/container"
+	"github.com/xianyouq/mydocker/images"
+	"github.com/xianyouq/mydocker/network"
 )
 
 var runCommand = cli.Command{
@@ -261,7 +262,8 @@ var imageCommand = cli.Command{
 				if len(context.Args()) < 1 {
 					return fmt.Errorf("Missing image name")
 				}
-				//TO Do
+				volume := context.String("tag")
+				images.LoadImages(context.Args()[0], volume)
 				return nil
 			},
 		},
@@ -269,7 +271,7 @@ var imageCommand = cli.Command{
 			Name:  "list",
 			Usage: "list container images",
 			Action: func(context *cli.Context) error {
-				//TO Do
+				images.ListImages()
 				return nil
 			},
 		},

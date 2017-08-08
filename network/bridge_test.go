@@ -1,7 +1,9 @@
 package network
-import(
+
+import (
 	"testing"
-	"github.com/xianlubird/mydocker/container"
+
+	"github.com/xianyouq/mydocker/container"
 )
 
 func TestBridgeInit(t *testing.T) {
@@ -27,7 +29,7 @@ func TestBridgeConnect(t *testing.T) {
 func TestNetworkConnect(t *testing.T) {
 
 	cInfo := &container.ContainerInfo{
-		Id: "testcontainer",
+		Id:  "testcontainer",
 		Pid: "15438",
 	}
 

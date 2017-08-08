@@ -9,11 +9,11 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/xianhubird/mydocker/util"
-	"github.com/xianlubird/mydocker/cgroups"
-	"github.com/xianlubird/mydocker/cgroups/subsystems"
-	"github.com/xianlubird/mydocker/container"
-	"github.com/xianlubird/mydocker/network"
+	"github.com/xianyouq/mydocker/cgroups"
+	"github.com/xianyouq/mydocker/cgroups/subsystems"
+	"github.com/xianyouq/mydocker/container"
+	"github.com/xianyouq/mydocker/network"
+	"github.com/xianyouq/mydocker/util"
 )
 
 func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string,
@@ -34,7 +34,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	}
 
 	//record container info
-	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume)
+	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume, imageName)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
@@ -78,7 +78,7 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(containerPID int, commandArray []string, containerName, id, volume string) (string, error) {
+func recordContainerInfo(containerPID int, commandArray []string, containerName, id, volume, imageName string) (string, error) {
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 	command := strings.Join(commandArray, "")
 	containerInfo := &container.ContainerInfo{
@@ -89,6 +89,7 @@ func recordContainerInfo(containerPID int, commandArray []string, containerName,
 		Status:      container.RUNNING,
 		Name:        containerName,
 		Volume:      volume,
+		ImageName:   imageName,
 	}
 
 	jsonBytes, err := json.Marshal(containerInfo)

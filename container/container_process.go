@@ -13,7 +13,7 @@ var (
 	RUNNING             string = "running"
 	STOP                string = "stopped"
 	Exit                string = "exited"
-	DefaultInfoLocation string = "/var/run/mydocker/container%s/"
+	DefaultInfoLocation string = "/var/run/mydocker/container/%s/"
 	ConfigName          string = "config.json"
 	ContainerLogFile    string = "container.log"
 
@@ -30,6 +30,7 @@ type ContainerInfo struct {
 	Status      string   `json:"status"`      //容器的状态
 	Volume      string   `json:"volume"`      //容器的数据卷
 	PortMapping []string `json:"portmapping"` //端口映射
+	ImageName   string   `json:"imagename"`
 }
 
 func NewParentProcess(tty bool, containerName, volume, imageName string, envSlice []string) (*exec.Cmd, *os.File) {
