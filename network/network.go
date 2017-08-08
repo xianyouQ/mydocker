@@ -61,20 +61,20 @@ func (nw *Network) dump(dumpPath string) error {
 	nwPath := path.Join(dumpPath, nw.Name)
 	nwFile, err := os.OpenFile(nwPath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		logrus.Errorf("error：", err)
+		logrus.Errorf("error：%v", err)
 		return err
 	}
 	defer nwFile.Close()
 
 	nwJson, err := json.Marshal(nw)
 	if err != nil {
-		logrus.Errorf("error：", err)
+		logrus.Errorf("error：%v", err)
 		return err
 	}
 
 	_, err = nwFile.Write(nwJson)
 	if err != nil {
-		logrus.Errorf("error：", err)
+		logrus.Errorf("error：%v", err)
 		return err
 	}
 	return nil
@@ -106,7 +106,7 @@ func (nw *Network) load(dumpPath string) error {
 
 	err = json.Unmarshal(nwJson[:n], nw)
 	if err != nil {
-		logrus.Errorf("Error load nw info", err)
+		logrus.Errorf("Error load nw info:%v", err)
 		return err
 	}
 	return nil

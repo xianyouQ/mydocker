@@ -19,7 +19,7 @@ import (
 
 func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string,
 	envSlice []string, nw string, portmapping []string) {
-	containerID := util.randStringBytes(10)
+	containerID := util.RandStringBytes(10)
 	if containerName == "" {
 		containerName = containerID
 	}
