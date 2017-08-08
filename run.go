@@ -39,7 +39,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	}
 
 	//record container info
-	var containerName string
+
 	containerName, err = recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume, imageName)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)

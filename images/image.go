@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	rootUrl          string = "/var/run/mydocker/images/diff"
-	defaultImagePath string = "/var/run/mydocker/images/config"
+	rootUrl          string = "/var/lib/mydocker/images/diff"
+	defaultImagePath string = "/var/lib/mydocker/images/config"
 	images                  = map[string]*ImageInfo{}
 )
 

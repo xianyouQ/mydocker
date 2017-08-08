@@ -13,12 +13,12 @@ var (
 	RUNNING             string = "running"
 	STOP                string = "stopped"
 	Exit                string = "exited"
-	DefaultInfoLocation string = "/var/run/mydocker/container/%s/"
+	DefaultInfoLocation string = "/var/lib/mydocker/container/%s/"
 	ConfigName          string = "config.json"
 	ContainerLogFile    string = "container.log"
 
-	MntUrl        string = "/var/run/mydocker/mnt/%s"
-	WriteLayerUrl string = "/var/run/mydocker/writeLayer/%s"
+	MntUrl        string = "/var/lib/mydocker/mnt/%s"
+	WriteLayerUrl string = "/var/lib/mydocker/writeLayer/%s"
 )
 
 type ContainerInfo struct {
