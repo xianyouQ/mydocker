@@ -1,4 +1,4 @@
-package main
+package container
 
 import (
 	"fmt"
@@ -6,12 +6,11 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/xianyouq/mydocker/container"
 )
 
 func logContainer(containerName string) {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	logFileLocation := dirURL + container.ContainerLogFile
+	dirURL := fmt.Sprintf(DefaultInfoLocation, containerName)
+	logFileLocation := dirURL + ContainerLogFile
 	file, err := os.Open(logFileLocation)
 	defer file.Close()
 	if err != nil {

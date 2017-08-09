@@ -1,7 +1,6 @@
 package images
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -23,75 +22,9 @@ var (
 )
 
 type ImageInfo struct {
-	Id          string `json:"id"`         //镜像Id
+	util.JsonHelp
 	Name        string `json:"name"`       //镜像名
 	CreatedTime string `json:"createTime"` //创建时间
-}
-
-func (self *ImageInfo) dump(dumpPath string) error {
-	if _, err := os.Stat(dumpPath); err != nil {
-		if os.IsNotExist(err) {
-			os.MkdirAll(dumpPath, 0644)
-		} else {
-			return err
-		}
-	}
-
-	imagePath := path.Join(dumpPath, self.Id)
-	imageFile, err := os.OpenFile(imagePath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.Errorf("error when open dump imageConfigFile：%v", err)
-		return err
-	}
-	defer imageFile.Close()
-
-	imageJson, err := json.Marshal(self)
-	if err != nil {
-		log.Errorf("error when Marsha imageJson：%v", err)
-		return err
-	}
-
-	_, err = imageFile.Write(imageJson)
-	if err != nil {
-		log.Errorf("error when Write Image Json：%v", err)
-		return err
-	}
-	return nil
-}
-
-func (self *ImageInfo) remove(dumpPath string) error {
-	if _, err := os.Stat(path.Join(dumpPath, self.Id)); err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		} else {
-			return err
-		}
-	} else {
-		return os.Remove(path.Join(dumpPath, self.Id))
-	}
-}
-
-func (self *ImageInfo) load(dumpPath string) error {
-
-	imagePath := path.Join(dumpPath, self.Id)
-	if _, err := os.Stat(imagePath); err != nil {
-		return err
-	}
-	imageConfigFile, err := os.Open(imagePath)
-	defer imageConfigFile.Close()
-
-	imageJson := make([]byte, 2000)
-	n, err := imageConfigFile.Read(imageJson)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(imageJson[:n], self)
-	if err != nil {
-		log.Errorf("Error load image info:%v", err)
-		return err
-	}
-	return nil
 }
 
 func LoadImages(outImagePath, tag string) error {

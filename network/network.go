@@ -6,8 +6,9 @@ import (
 
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"
+	"github.com/xianyouQ/mydocker/util"
 	//"os"
-	"encoding/json"
+
 	"os"
 	"os/exec"
 	"path"
@@ -17,7 +18,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/xianyouq/mydocker/container"
 )
 
 var (
@@ -36,7 +36,7 @@ type Endpoint struct {
 }
 
 type Network struct {
-	Name    string
+	util.JsonHelp
 	IpRange *net.IPNet
 	Driver  string
 }
@@ -49,70 +49,7 @@ type NetworkDriver interface {
 	Disconnect(network Network, endpoint *Endpoint) error
 }
 
-func (nw *Network) dump(dumpPath string) error {
-	if _, err := os.Stat(dumpPath); err != nil {
-		if os.IsNotExist(err) {
-			os.MkdirAll(dumpPath, 0644)
-		} else {
-			return err
-		}
-	}
-
-	nwPath := path.Join(dumpPath, nw.Name)
-	nwFile, err := os.OpenFile(nwPath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		logrus.Errorf("error：%v", err)
-		return err
-	}
-	defer nwFile.Close()
-
-	nwJson, err := json.Marshal(nw)
-	if err != nil {
-		logrus.Errorf("error：%v", err)
-		return err
-	}
-
-	_, err = nwFile.Write(nwJson)
-	if err != nil {
-		logrus.Errorf("error：%v", err)
-		return err
-	}
-	return nil
-}
-
-func (nw *Network) remove(dumpPath string) error {
-	if _, err := os.Stat(path.Join(dumpPath, nw.Name)); err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		} else {
-			return err
-		}
-	} else {
-		return os.Remove(path.Join(dumpPath, nw.Name))
-	}
-}
-
-func (nw *Network) load(dumpPath string) error {
-	nwConfigFile, err := os.Open(dumpPath)
-	defer nwConfigFile.Close()
-	if err != nil {
-		return err
-	}
-	nwJson := make([]byte, 2000)
-	n, err := nwConfigFile.Read(nwJson)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(nwJson[:n], nw)
-	if err != nil {
-		logrus.Errorf("Error load nw info:%v", err)
-		return err
-	}
-	return nil
-}
-
-func Init() error {
+func init() {
 	var bridgeDriver = BridgeNetworkDriver{}
 	drivers[bridgeDriver.Name()] = &bridgeDriver
 
@@ -120,7 +57,8 @@ func Init() error {
 		if os.IsNotExist(err) {
 			os.MkdirAll(defaultNetworkPath, 0644)
 		} else {
-			return err
+			logrus.Errorf("loading network config error %v", err)
+			return
 		}
 	}
 
@@ -143,7 +81,7 @@ func Init() error {
 
 	//logrus.Infof("networks: %v", networks)
 
-	return nil
+	return
 }
 
 func CreateNetwork(driver, subnet, name string) error {
@@ -195,8 +133,8 @@ func DeleteNetwork(networkName string) error {
 	return nw.remove(defaultNetworkPath)
 }
 
-func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) func() {
-	f, err := os.OpenFile(fmt.Sprintf("/proc/%s/ns/net", cinfo.Pid), os.O_RDONLY, 0)
+func enterProcessNetns(enLink *netlink.Link, Pid string) func() {
+	f, err := os.OpenFile(fmt.Sprintf("/proc/%s/ns/net", Pid), os.O_RDONLY, 0)
 	if err != nil {
 		logrus.Errorf("error get container net namespace, %v", err)
 	}
@@ -227,13 +165,13 @@ func enterContainerNetns(enLink *netlink.Link, cinfo *container.ContainerInfo) f
 	}
 }
 
-func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInfo) error {
+func configEndpointIpAddressAndRoute(ep *Endpoint, Pid string) error {
 	peerLink, err := netlink.LinkByName(ep.Device.PeerName)
 	if err != nil {
 		return fmt.Errorf("fail config endpoint: %v", err)
 	}
 
-	defer enterContainerNetns(&peerLink, cinfo)()
+	defer enterContainerNetns(&peerLink, Pid)()
 
 	interfaceIP := *ep.Network.IpRange
 	interfaceIP.IP = ep.IPAddress
@@ -265,7 +203,7 @@ func configEndpointIpAddressAndRoute(ep *Endpoint, cinfo *container.ContainerInf
 	return nil
 }
 
-func configPortMapping(ep *Endpoint, cinfo *container.ContainerInfo) error {
+func configPortMapping(ep *Endpoint) error {
 	for _, pm := range ep.PortMapping {
 		portMapping := strings.Split(pm, ":")
 		if len(portMapping) != 2 {
@@ -285,7 +223,7 @@ func configPortMapping(ep *Endpoint, cinfo *container.ContainerInfo) error {
 	return nil
 }
 
-func Connect(networkName string, cinfo *container.ContainerInfo) error {
+func Connect(networkName string, Pid string, PortMapping []string) error {
 	network, ok := networks[networkName]
 	if !ok {
 		return fmt.Errorf("No Such Network: %s", networkName)
@@ -302,7 +240,7 @@ func Connect(networkName string, cinfo *container.ContainerInfo) error {
 		ID:          fmt.Sprintf("%s-%s", cinfo.Id, networkName),
 		IPAddress:   ip,
 		Network:     network,
-		PortMapping: cinfo.PortMapping,
+		PortMapping: PortMapping,
 	}
 	// 调用网络驱动挂载和配置网络端点
 	if err = drivers[network.Driver].Connect(network, ep); err != nil {
@@ -313,9 +251,9 @@ func Connect(networkName string, cinfo *container.ContainerInfo) error {
 		return err
 	}
 
-	return configPortMapping(ep, cinfo)
+	return configPortMapping(ep)
 }
 
-func Disconnect(networkName string, cinfo *container.ContainerInfo) error {
+func Disconnect(networkName string, pid string) error {
 	return nil
 }

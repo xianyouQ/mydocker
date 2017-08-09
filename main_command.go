@@ -89,7 +89,7 @@ var runCommand = cli.Command{
 		envSlice := context.StringSlice("e")
 		portmapping := context.StringSlice("p")
 
-		Run(createTty, cmdArray, resConf, containerName, volume, imageName, envSlice, network, portmapping)
+		container.Run(createTty, cmdArray, resConf, containerName, volume, imageName, envSlice, network, portmapping)
 		return nil
 	},
 }
@@ -108,7 +108,7 @@ var listCommand = cli.Command{
 	Name:  "ps",
 	Usage: "list all the containers",
 	Action: func(context *cli.Context) error {
-		ListContainers()
+		container.ListContainers()
 		return nil
 	},
 }
@@ -121,7 +121,7 @@ var logCommand = cli.Command{
 			return fmt.Errorf("Please input your container name")
 		}
 		containerName := context.Args().Get(0)
-		logContainer(containerName)
+		container.logContainer(containerName)
 		return nil
 	},
 }
@@ -144,7 +144,7 @@ var execCommand = cli.Command{
 		for _, arg := range context.Args().Tail() {
 			commandArray = append(commandArray, arg)
 		}
-		ExecContainer(containerName, commandArray)
+		container.ExecContainer(containerName, commandArray)
 		return nil
 	},
 }
@@ -157,7 +157,7 @@ var stopCommand = cli.Command{
 			return fmt.Errorf("Missing container name")
 		}
 		containerName := context.Args().Get(0)
-		stopContainer(containerName)
+		container.stopContainer(containerName)
 		return nil
 	},
 }
@@ -170,7 +170,7 @@ var removeCommand = cli.Command{
 			return fmt.Errorf("Missing container name")
 		}
 		containerName := context.Args().Get(0)
-		removeContainer(containerName)
+		container.removeContainer(containerName)
 		return nil
 	},
 }
@@ -184,7 +184,7 @@ var commitCommand = cli.Command{
 		}
 		containerName := context.Args().Get(0)
 		imageName := context.Args().Get(1)
-		commitContainer(containerName, imageName)
+		container.commitContainer(containerName, imageName)
 		return nil
 	},
 }

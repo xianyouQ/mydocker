@@ -1,4 +1,4 @@
-package main
+package container
 
 import (
 	"encoding/json"
@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/xianyouq/mydocker/container"
 	_ "github.com/xianyouq/mydocker/nsenter"
 )
 
@@ -43,13 +42,13 @@ func ExecContainer(containerName string, comArray []string) {
 }
 
 func GetContainerPidByName(containerName string) (string, error) {
-	dirURL := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	configFilePath := dirURL + container.ConfigName
+	dirURL := fmt.Sprintf(DefaultInfoLocation, containerName)
+	configFilePath := dirURL + ConfigName
 	contentBytes, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
 		return "", err
 	}
-	var containerInfo container.ContainerInfo
+	var containerInfo ContainerInfo
 	if err := json.Unmarshal(contentBytes, &containerInfo); err != nil {
 		return "", err
 	}

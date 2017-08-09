@@ -1,4 +1,4 @@
-package main
+package container
 
 import (
 	"encoding/json"
@@ -9,9 +9,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/xianlubird/mydocker/container"
 	"github.com/xianyouq/mydocker/cgroups"
 	"github.com/xianyouq/mydocker/cgroups/subsystems"
-	"github.com/xianyouq/mydocker/container"
 	"github.com/xianyouq/mydocker/images"
 	"github.com/xianyouq/mydocker/network"
 	"github.com/xianyouq/mydocker/util"
@@ -28,7 +28,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		log.Errorf("images not exist:%v", err)
 		return
 	}
-	parent, writePipe := container.NewParentProcess(tty, containerName, volume, ImageLocation, envSlice)
+	parent, writePipe := NewParentProcess(tty, containerName, volume, ImageLocation, envSlice)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -54,14 +54,13 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 
 	if nw != "" {
 		// config container network
-		network.Init()
 		containerInfo := &container.ContainerInfo{
 			Id:          containerID,
 			Pid:         strconv.Itoa(parent.Process.Pid),
 			Name:        containerName,
 			PortMapping: portmapping,
 		}
-		if err := network.Connect(nw, containerInfo); err != nil {
+		if err := network.Connect(nw, strconv.Itoa(parent.Process.Pid), portmapping); err != nil {
 			log.Errorf("Error Connect Network %v", err)
 			return
 		}
